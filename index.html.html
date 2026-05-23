@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Magic Work</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { min-height:100%; }
+body {
+  font-family:'Nunito',sans-serif;
+  min-height:100vh;
+  display:flex; align-items:flex-start; justify-content:center;
+  padding:32px 18px 48px;
+  overflow-y:auto;
+  transition:background 0.5s ease;
+}
+body.admin-day   { background:linear-gradient(135deg,#FFF8E1 0%,#FFF3E0 50%,#E8F5E9 100%); }
+body.compose-day { background:linear-gradient(135deg,#FFF3E0 0%,#FCE4EC 45%,#EDE7F6 100%); }
+body.no-card     { background:linear-gradient(135deg,#EDE7F6,#E8EAF6); }
+
+.card-wrapper { width:100%; max-width:480px; }
+.card {
+  background:#fff; border-radius:26px;
+  padding:44px 38px 38px;
+  box-shadow:0 10px 48px rgba(80,40,120,0.18),0 2px 8px rgba(80,40,120,0.10);
+  position:relative; overflow:hidden;
+  border:2px solid rgba(179,157,219,0.18);
+}
+.card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:5px;
+  background-size:300% 100%; animation:stripe 5s linear infinite;
+}
+.admin-day   .card::before { background:linear-gradient(90deg,#FFB74D,#FFF176,#A5D6A7,#FFB74D); }
+.compose-day .card::before { background:linear-gradient(90deg,#F5C842,#F7857A,#B39DDB,#7EC8E3,#F5C842); }
+.no-card     .card::before { background:linear-gradient(90deg,#B39DDB,#7EC8E3,#B39DDB); }
+@keyframes stripe { 0%{background-position:0% 0} 100%{background-position:300% 0} }
+
+.badge {
+  display:inline-flex; align-items:center; gap:7px;
+  font-size:12px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase;
+  padding:7px 16px; border-radius:20px; margin-bottom:12px;
+}
+.admin-day   .badge { background:linear-gradient(135deg,#FFB74D,#FFA726); color:#3E1E00; }
+.compose-day .badge { background:linear-gradient(135deg,#F5C842,#FFAB00); color:#3A2000; }
+.no-card     .badge { background:linear-gradient(135deg,#B39DDB,#9575CD); color:#fff; }
+
+.mode-tag {
+  display:inline-block; font-size:12px; font-weight:800;
+  letter-spacing:1px; text-transform:uppercase;
+  padding:6px 14px; border-radius:20px; margin-bottom:24px; margin-left:8px;
+}
+.admin-day   .mode-tag { background:rgba(255,152,0,0.18); color:#BF360C; border:1.5px solid rgba(255,152,0,0.5); }
+.compose-day .mode-tag { background:rgba(233,30,99,0.10); color:#880E4F; border:1.5px solid rgba(233,30,99,0.35); }
+.no-card     .mode-tag { display:none; }
+
+.card-title { font-family:'Playfair Display',serif; font-size:30px; font-weight:700; color:#0D0520; line-height:1.28; margin-bottom:20px; }
+.card-title em { font-style:italic; }
+.compose-day .card-title em { background:linear-gradient(90deg,#F7857A,#C2185B); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.admin-day   .card-title em { background:linear-gradient(90deg,#FFB74D,#E65100); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+.card-body { font-size:17px; color:#1A0D36; line-height:1.8; font-weight:600; margin-bottom:22px; }
+
+.power { border-radius:14px; padding:16px 22px; margin-bottom:24px; text-align:center; }
+.admin-day   .power { background:linear-gradient(135deg,rgba(255,183,77,0.14),rgba(165,214,167,0.10)); border:2px solid rgba(255,183,77,0.4); }
+.compose-day .power { background:linear-gradient(135deg,rgba(245,200,66,0.14),rgba(247,133,122,0.10)); border:2px solid rgba(245,200,66,0.4); }
+.power p { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:#0D0520; line-height:1.5; }
+.power p em { font-style:italic; }
+.compose-day .power p em { color:#7B1FA2; }
+.admin-day   .power p em { color:#E65100; }
+
+.teaser { display:none; align-items:center; gap:12px; background:rgba(247,133,122,0.08); border:1.5px solid rgba(247,133,122,0.3); border-radius:14px; padding:14px 18px; margin-bottom:22px; }
+.teaser.show { display:flex; }
+.teaser-icon { font-size:24px; flex-shrink:0; }
+.teaser-text { font-size:15px; color:#5D1A40; font-weight:700; line-height:1.5; }
+.teaser-text span { display:block; font-size:13px; font-weight:500; color:#9E6080; margin-top:3px; font-style:italic; }
+
+.week-goals { display:none; flex-direction:column; gap:6px; background:linear-gradient(135deg,rgba(126,200,227,0.12),rgba(168,230,207,0.12)); border-left:4px solid #7EC8E3; border-radius:0 14px 14px 0; padding:18px 20px; margin-bottom:22px; }
+.week-goals.show { display:flex; }
+.goals-label { font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#5BA8C4; margin-bottom:6px; }
+.goals-list { list-style:none; }
+.goals-list li { font-size:15px; color:#0D0520; font-weight:600; padding:5px 0; display:flex; align-items:flex-start; gap:8px; line-height:1.5; }
+.goals-list li::before { content:'→'; color:#7EC8E3; flex-shrink:0; font-weight:800; }
+
+.week-banner { display:none; flex-direction:column; gap:8px; background:linear-gradient(135deg,rgba(168,230,207,0.22),rgba(126,200,227,0.16)); border:2px solid rgba(67,160,71,0.32); border-radius:16px; padding:20px 22px; margin-bottom:22px; text-align:center; }
+.week-banner.show { display:flex; }
+.wb-icon { font-size:32px; }
+.wb-title { font-family:'Playfair Display',serif; font-size:19px; font-weight:700; color:#1B5E20; line-height:1.3; }
+.wb-msg { font-size:15px; color:#2E7D32; line-height:1.65; font-weight:600; }
+
+.optional-nudge { display:none; align-items:center; gap:12px; background:rgba(179,157,219,0.08); border:1.5px dashed rgba(179,157,219,0.45); border-radius:14px; padding:14px 18px; margin-bottom:22px; }
+.optional-nudge.show { display:flex; }
+.nudge-icon { font-size:22px; flex-shrink:0; }
+.nudge-text { font-size:15px; color:#4A2C6A; font-weight:600; line-height:1.55; }
+
+.divider { height:1px; background:linear-gradient(90deg,transparent,rgba(179,157,219,0.35),transparent); margin:22px 0; }
+
+.countdown-wrap { background:rgba(45,26,80,0.05); border-radius:16px; padding:18px 12px; margin-bottom:22px; }
+.cd-label { text-align:center; font-size:12px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; color:#9E8BB5; margin-bottom:12px; }
+.cd-units { display:flex; align-items:center; justify-content:center; gap:6px; }
+.unit { display:flex; flex-direction:column; align-items:center; background:white; border-radius:12px; padding:12px 18px; min-width:64px; box-shadow:0 2px 10px rgba(80,40,120,0.09); }
+.unit-num { font-family:'Playfair Display',serif; font-size:34px; font-weight:700; color:#0D0520; line-height:1; }
+.unit-sub { font-size:10px; color:#9E8BB5; letter-spacing:1.2px; text-transform:uppercase; margin-top:4px; font-weight:700; }
+.sep { font-size:26px; color:#C9B8E0; font-weight:700; padding-bottom:16px; }
+
+.check-wrap { display:flex; flex-direction:column; align-items:center; gap:14px; border-radius:18px; padding:24px 20px; margin-bottom:22px; }
+.admin-day   .check-wrap { background:rgba(255,183,77,0.07); border:1.5px solid rgba(255,183,77,0.3); }
+.compose-day .check-wrap { background:rgba(168,230,207,0.08); border:1.5px solid rgba(168,230,207,0.45); }
+.check-label { font-size:16px; font-weight:800; color:#2D1A50; text-align:center; }
+
+.check-btn {
+  display:flex; align-items:center; justify-content:center; gap:12px;
+  width:100%; background:white; border:2.5px solid #B39DDB;
+  border-radius:50px; padding:17px 28px;
+  font-family:'Nunito',sans-serif; font-size:17px; font-weight:800; color:#0D0520;
+  cursor:pointer; transition:all 0.25s ease;
+  box-shadow:0 4px 16px rgba(80,40,120,0.14);
+}
+.check-btn:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(80,40,120,0.2); border-color:#9575CD; }
+.check-btn.done { background:linear-gradient(135deg,#A8E6CF,#69F0AE); border-color:#388E3C; color:#1B5E20; animation:btnPop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes btnPop { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+
+.circle { width:30px; height:30px; border-radius:50%; border:2.5px solid #B39DDB; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; background:#F7F4FF; transition:all 0.25s; }
+.check-btn.done .circle { background:#388E3C; border-color:#388E3C; color:white; font-size:18px; }
+
+.opt-btn { display:none; align-items:center; justify-content:center; gap:12px; width:100%; background:white; border:2px dashed #F7857A; border-radius:50px; padding:15px 26px; font-family:'Nunito',sans-serif; font-size:16px; font-weight:700; color:#880E4F; cursor:pointer; transition:all 0.25s; }
+.opt-btn.show { display:flex; }
+.opt-btn:hover { background:rgba(247,133,122,0.06); transform:translateY(-1px); }
+.opt-btn.done { background:linear-gradient(135deg,#A8E6CF,#69F0AE); border:2px solid #388E3C; color:#1B5E20; }
+.opt-circle { width:28px; height:28px; border-radius:50%; border:2.5px solid #F7857A; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; background:transparent; transition:all 0.25s; }
+.opt-btn.done .opt-circle { background:#388E3C; border-color:#388E3C; color:white; }
+
+.celeb-overlay { display:none; position:fixed; inset:0; background:linear-gradient(160deg,rgba(255,248,240,0.98),rgba(240,235,255,0.98)); z-index:1000; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 30px; }
+.celeb-overlay.show { display:flex; animation:fadeIn 0.5s cubic-bezier(0.34,1.2,0.64,1); }
+@keyframes fadeIn { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+
+.celeb-icon { font-size:96px; line-height:1; margin-bottom:16px; display:block; filter:drop-shadow(0 4px 16px rgba(247,133,122,0.4)); }
+.celeb-icon.dancing { animation:noteDance 0.5s ease infinite alternate; }
+.celeb-icon.nodding { animation:noteNod 0.7s ease infinite alternate; }
+@keyframes noteDance { from{transform:rotate(-14deg) scale(1) translateY(0);} to{transform:rotate(14deg) scale(1.2) translateY(-8px);} }
+@keyframes noteNod   { from{transform:translateY(0) scale(1);} to{transform:translateY(-14px) scale(1.08);} }
+
+.celeb-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:#1E1040; margin-bottom:12px; line-height:1.25; }
+.celeb-msg   { font-size:17px; color:#4A3060; line-height:1.8; max-width:340px; font-weight:600; }
+.coach-pill  { display:inline-block; margin-top:20px; font-size:15px; font-weight:800; color:#7B1FA2; background:rgba(123,31,162,0.09); border-radius:50px; padding:11px 24px; }
+.celeb-close { margin-top:22px; background:linear-gradient(135deg,#F7857A,#C2185B); color:white; border:none; border-radius:50px; padding:14px 36px; font-family:'Nunito',sans-serif; font-size:16px; font-weight:800; cursor:pointer; transition:transform 0.2s; }
+.celeb-close:hover { transform:scale(1.04); }
+
+.piece { position:fixed; pointer-events:none; z-index:2000; animation:fall linear forwards; }
+@keyframes fall { 0%{transform:translateY(-20px) rotate(0deg) scale(1);opacity:1;} 85%{opacity:1;} 100%{transform:translateY(108vh) rotate(900deg) scale(0.4);opacity:0;} }
+
+/* Password screen */
+.pw-screen {
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(135deg,#FFF3E0 0%,#FCE4EC 45%,#EDE7F6 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:40px 24px; text-align:center;
+}
+.pw-screen.hide { display:none; }
+.pw-note { font-size:72px; margin-bottom:16px; animation:noteDance 0.6s ease infinite alternate; }
+.pw-title { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; color:#0D0520; margin-bottom:8px; }
+.pw-sub { font-size:15px; color:#7B6B99; font-weight:600; margin-bottom:32px; }
+.pw-input {
+  width:100%; max-width:320px;
+  font-family:'Nunito',sans-serif; font-size:18px; font-weight:700;
+  padding:16px 22px; border-radius:50px;
+  border:2.5px solid #B39DDB; outline:none;
+  text-align:center; color:#0D0520;
+  box-shadow:0 4px 16px rgba(80,40,120,0.12);
+  margin-bottom:14px; letter-spacing:2px;
+}
+.pw-input:focus { border-color:#9575CD; box-shadow:0 4px 20px rgba(80,40,120,0.22); }
+.pw-btn {
+  width:100%; max-width:320px;
+  font-family:'Nunito',sans-serif; font-size:16px; font-weight:800;
+  padding:16px 22px; border-radius:50px; border:none;
+  background:linear-gradient(135deg,#F7857A,#C2185B);
+  color:white; cursor:pointer;
+  box-shadow:0 4px 16px rgba(194,24,91,0.3);
+  transition:transform 0.2s;
+}
+.pw-btn:hover { transform:scale(1.03); }
+.pw-error { font-size:14px; color:#C2185B; font-weight:700; margin-top:12px; display:none; }
+.pw-error.show { display:block; }
+</style>
+</head>
+<body>
+
+<div class="pw-screen" id="pwScreen">
+  <span class="pw-note">🎵</span>
+  <div class="pw-title">My Magic Work</div>
+  <div class="pw-sub">Enter your access word to continue.</div>
+  <input class="pw-input" id="pwInput" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()" autocomplete="off"/>
+  <button class="pw-btn" onclick="checkPw()">Open my card →</button>
+  <div class="pw-error" id="pwError">That's not right. Try again.</div>
+</div>
+
+<div class="card-wrapper">
+  <div class="card">
+    <div>
+      <span class="badge">♩ My Magic Work — <span id="dayLabel">…</span></span>
+      <span class="mode-tag" id="modeTag">…</span>
+    </div>
+    <h1 class="card-title" id="cardTitle">…</h1>
+    <div class="card-body" id="cardBody">…</div>
+    <div class="week-goals" id="weekGoals">
+      <div class="goals-label">This week's focus</div>
+      <ul class="goals-list" id="goalsList"></ul>
+    </div>
+    <div class="power"><p id="cardPower">…</p></div>
+    <div class="teaser" id="teaser">
+      <span class="teaser-icon">🎵</span>
+      <div class="teaser-text">
+        <span id="teaserMain">Tomorrow you compose.</span>
+        <span id="teaserSub"></span>
+      </div>
+    </div>
+    <div class="optional-nudge" id="optNudge">
+      <span class="nudge-icon">🎵</span>
+      <div class="nudge-text">If the music is there today, even two hours counts. No obligation — just an open door.</div>
+    </div>
+    <div class="week-banner" id="weekBanner">
+      <div class="wb-icon">🎼</div>
+      <div class="wb-title">You composed every day this week.</div>
+      <div class="wb-msg" id="wbMsg"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="countdown-wrap">
+      <div class="cd-label">⏰ Next card unlocks in</div>
+      <div class="cd-units">
+        <div class="unit"><span class="unit-num" id="cdH">00</span><span class="unit-sub">hrs</span></div>
+        <span class="sep">:</span>
+        <div class="unit"><span class="unit-num" id="cdM">00</span><span class="unit-sub">min</span></div>
+        <span class="sep">:</span>
+        <div class="unit"><span class="unit-num" id="cdS">00</span><span class="unit-sub">sec</span></div>
+      </div>
+    </div>
+    <div class="check-wrap">
+      <div class="check-label" id="checkLabel">…</div>
+      <button class="check-btn" id="checkBtn" onclick="tick()">
+        <span class="circle" id="circle">○</span>
+        <span id="btnText">…</span>
+      </button>
+      <button class="opt-btn" id="optBtn" onclick="tickOptional()">
+        <span class="opt-circle" id="optCircle">○</span>
+        <span id="optBtnText">I also composed today ✨</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="celeb-overlay" id="celebOverlay">
+  <span class="celeb-icon" id="celebIcon">🎵</span>
+  <div class="celeb-title" id="celebTitle">…</div>
+  <div class="celeb-msg" id="celebMsg">…</div>
+  <span class="coach-pill">📱 Text your coach.</span>
+  <button class="celeb-close" onclick="closeceleb()">Back to my card</button>
+</div>
+
+<script>
+var schedule = {
+  '2026-05-23': {
+    type:'admin',
+    title:'Today, <em>you get things in order.</em>',
+    body:'Handle what needs handling today. Clear the decks so the week ahead has space in it.',
+    power:'Showing up on a Saturday <em>is already ahead of the game.</em>',
+    checkLabel:'Did you take care of your admin today?',
+    btnText:'Admin done',
+    icon:'💻', iconClass:'nodding',
+    celebTitle:'Saturday done.',
+    celebMsg:'Week starts clean. You are ready.'
+  },
+  '2026-05-24': {
+    type:'admin',
+    title:'Second act. <em>Finish what you started.</em>',
+    body:'Yesterday you cleared the ground. Today you finish the job. Whatever is still open — close it. Whatever is still unclear — decide it. Monday starts clean because of what you do today.',
+    power:'Two days of preparation is not procrastination. <em>It is how serious work begins.</em>',
+    teaser:true, teaserMain:'Tomorrow you compose.',
+    teaserSub:'Tea. Thirty minutes reading. Then your ideas. You will be ready.',
+    checkLabel:'Did you take care of your admin today?',
+    btnText:'Admin done — Monday is ready',
+    icon:'💻', iconClass:'nodding',
+    celebTitle:'Setup complete. Monday is yours.',
+    celebMsg:'Two days of groundwork done. Tomorrow you go to your ideas with nothing in the way. That is exactly where you want to be.'
+  },
+  '2026-05-25': {
+    type:'compose',
+    title:'Monday. <em>First session of the week.</em>',
+    body:'Start with your tea. Then thirty minutes reading — let the words settle you into the right headspace. When you are ready, go to your ideas. That is your ritual. Trust it.',
+    power:'The session begins the moment <em>you decide it does.</em>',
+    weekGoals:['Finalise orchestra size','Prepare orchestra bibliography','Print scores and mark things','Categorise potential sound materials — tag in Repertoire'],
+    checkLabel:'Did you compose today?',
+    btnText:'I composed today',
+    icon:'🎵', iconClass:'dancing',
+    celebTitle:'First session of the week — done. Well done.',
+    celebMsg:'You made your tea, you read, you went to your ideas and you worked. That is exactly how this week was supposed to start. Come back tomorrow — the momentum is yours.'
+  },
+  '2026-05-26': {
+    type:'compose',
+    title:'You came back. <em>Keep going.</em>',
+    body:'Pick up exactly where you stopped Monday. Do not rewrite, do not second-guess. Continue. The momentum is still here — use it.',
+    power:'Day two is where most people stop. <em>You are not stopping.</em>',
+    checkLabel:'Did you compose today?',
+    btnText:'I composed today',
+    icon:'🎵', iconClass:'dancing',
+    celebTitle:'Two days in a row. Well done.',
+    celebMsg:'Monday and Tuesday — both ticked. Two consecutive sessions is where the material develops. Wednesday is admin, then Thursday you are straight back in the work.'
+  },
+  '2026-05-27': {
+    type:'admin',
+    title:'Step back. <em>Take care of business.</em>',
+    body:'Two solid composing days behind you. Now handle what needs handling — emails, admin, anything that takes up space in your head. Keep it clean so Thursday is fully uninterrupted.',
+    power:'Organising well today <em>is composing well tomorrow.</em>',
+    teaser:true, teaserMain:'Tomorrow you compose.',
+    teaserSub:'The distance will help. You will hear your ideas fresh on Thursday.',
+    checkLabel:'Did you take care of your admin today?',
+    btnText:'Admin done — ready for Thursday',
+    icon:'💻', iconClass:'nodding',
+    celebTitle:'Wednesday closed. Thursday is yours.',
+    celebMsg:'Two composing days behind you, admin done. Tomorrow you return with fresh ears — you will hear things Thursday that you could not hear Tuesday. That distance is a tool.'
+  },
+  '2026-05-28': {
+    type:'compose',
+    title:"You're back. <em>Your ideas waited.</em>",
+    body:'A day away gives you fresh ears. You will notice things now you could not see Tuesday. Do not restart — continue developing. Use what the break gave you.',
+    power:'Returning after a pause is a skill. <em>You just used it.</em>',
+    checkLabel:'Did you compose today?',
+    btnText:'I composed today',
+    icon:'🎵', iconClass:'dancing',
+    celebTitle:'You came back. Well done.',
+    celebMsg:'Three composing days this week — Monday, Tuesday, Thursday. You returned after admin day and you worked. One more tomorrow and this week is complete.'
+  },
+  '2026-05-29': {
+    type:'compose',
+    title:'Close the week <em>with your sound.</em>',
+    body:'Last composing day of the week. Finish what can be finished. Leave the rest in a clear place so next week picks up without friction. Work until the session is done — not until you feel like stopping.',
+    power:'You control when this week ends. <em>End it well.</em>',
+    checkLabel:'Did you compose today?',
+    btnText:'I composed today',
+    icon:'🎵', iconClass:'dancing',
+    celebTitle:'Four composing days. Week complete.',
+    celebMsg:'Monday. Tuesday. Thursday. Friday — all ticked. That is a full working week. You showed up every time it was time to show up. Rest this weekend.'
+  },
+  '2026-05-30': {
+    type:'admin',
+    optional:true,
+    title:'Week closed. <em>Your call today.</em>',
+    body:'Admin first — wrap up what the week left open, set next week up clean. And if the music calls today, even two hours counts. No pressure. Just an open door.',
+    power:'Every week you close properly <em>is a week that compounds.</em>',
+    checkLabel:'Did you take care of your admin today?',
+    btnText:'Admin done',
+    icon:'💻', iconClass:'nodding',
+    celebTitle:'Week wrapped. Well done.',
+    celebMsg:'You closed the week properly. Everything is in order. Next week starts clean and ready.'
+  }
+};
+
+var composeDates = ['2026-05-25','2026-05-26','2026-05-28','2026-05-29'];
+
+function getParisDateKey() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Europe/Paris', year:'numeric', month:'2-digit', day:'2-digit'
+  }).format(new Date());
+}
+
+function secsToNext5am() {
+  var now = new Date();
+  var fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Europe/Paris',
+    year:'numeric',month:'2-digit',day:'2-digit',
+    hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false
+  }).format(now).replace(',','').split(' ');
+  var dp=fmt[0].split('-'), tp=fmt[1].split(':');
+  var y=parseInt(dp[0]),mo=parseInt(dp[1])-1,d=parseInt(dp[2]);
+  var h=parseInt(tp[0]),m=parseInt(tp[1]),s=parseInt(tp[2]);
+  var parisNow=new Date(Date.UTC(y,mo,d,h,m,s));
+  var offset=now-parisNow;
+  var paris5am=new Date(Date.UTC(y,mo,d,5,0,0));
+  var next5=new Date(paris5am.getTime()-offset);
+  if(next5<=now) next5=new Date(next5.getTime()+86400000);
+  return Math.max(0,Math.floor((next5-now)/1000));
+}
+
+function allComposeTicked() {
+  return composeDates.every(function(d){ return localStorage.getItem('ticked_'+d)==='1'; });
+}
+
+var lastKey=null;
+
+function render() {
+  var key=getParisDateKey();
+  var card=schedule[key];
+  lastKey=key;
+  if(!card){
+    document.body.className='no-card';
+    document.getElementById('dayLabel').textContent=key;
+    document.getElementById('modeTag').textContent='';
+    document.getElementById('cardTitle').textContent='Rest day.';
+    document.getElementById('cardBody').textContent='No card today. Come back tomorrow.';
+    document.getElementById('cardPower').textContent='';
+    document.getElementById('checkLabel').textContent='';
+    document.getElementById('checkBtn').style.display='none';
+    return;
+  }
+  document.getElementById('checkBtn').style.display='';
+  document.body.className=card.type==='admin'?'admin-day':'compose-day';
+  document.getElementById('dayLabel').textContent=key;
+  document.getElementById('modeTag').textContent=card.type==='admin'?'📋 Admin Day':'🎵 Composing Day';
+  document.getElementById('cardTitle').innerHTML=card.title;
+  document.getElementById('cardBody').textContent=card.body;
+  document.getElementById('cardPower').innerHTML=card.power;
+  document.getElementById('checkLabel').textContent=card.checkLabel;
+  document.getElementById('btnText').textContent=card.btnText;
+
+  var wg=document.getElementById('weekGoals');
+  if(card.weekGoals){
+    wg.classList.add('show');
+    var ul=document.getElementById('goalsList');
+    ul.innerHTML='';
+    card.weekGoals.forEach(function(g){var li=document.createElement('li');li.textContent=g;ul.appendChild(li);});
+  } else { wg.classList.remove('show'); }
+
+  var t=document.getElementById('teaser');
+  if(card.teaser){
+    t.classList.add('show');
+    document.getElementById('teaserMain').textContent=card.teaserMain;
+    document.getElementById('teaserSub').textContent=card.teaserSub||'';
+  } else { t.classList.remove('show'); }
+
+  var on=document.getElementById('optNudge');
+  var ob=document.getElementById('optBtn');
+  if(card.optional){on.classList.add('show');ob.classList.add('show');}
+  else{on.classList.remove('show');ob.classList.remove('show');}
+
+  var wb=document.getElementById('weekBanner');
+  if(key==='2026-05-30'&&allComposeTicked()){
+    wb.classList.add('show');
+    document.getElementById('wbMsg').textContent='Monday. Tuesday. Thursday. Friday. Every composing day this week — done. That is not luck and it is not a good mood. That is a composer who shows up when it is time to show up. Remember how this week felt.';
+  } else { wb.classList.remove('show'); }
+
+  var btn=document.getElementById('checkBtn');
+  btn.classList.remove('done');
+  document.getElementById('circle').textContent='○';
+  document.getElementById('btnText').textContent=card.btnText;
+  if(localStorage.getItem('ticked_'+key)==='1'){
+    btn.classList.add('done');
+    document.getElementById('circle').textContent='✓';
+    document.getElementById('btnText').textContent='Done ✓';
+  }
+  ob.classList.remove('done');
+  document.getElementById('optCircle').textContent='○';
+  document.getElementById('optBtnText').textContent='I also composed today ✨';
+  if(card.optional&&localStorage.getItem('optTicked_'+key)==='1'){
+    ob.classList.add('done');
+    document.getElementById('optCircle').textContent='✓';
+    document.getElementById('optBtnText').textContent='Composed today too ✓';
+  }
+}
+
+function updateCountdown() {
+  var secs=secsToNext5am();
+  document.getElementById('cdH').textContent=String(Math.floor(secs/3600)).padStart(2,'0');
+  document.getElementById('cdM').textContent=String(Math.floor((secs%3600)/60)).padStart(2,'0');
+  document.getElementById('cdS').textContent=String(secs%60).padStart(2,'0');
+  var cur=getParisDateKey();
+  if(lastKey&&cur!==lastKey) revealNewCard();
+}
+
+function revealNewCard() {
+  var w=document.querySelector('.card-wrapper');
+  w.style.transition='opacity 0.6s ease, transform 0.6s ease';
+  w.style.opacity='0'; w.style.transform='translateY(20px)';
+  setTimeout(function(){
+    render();
+    setTimeout(function(){w.style.opacity='1';w.style.transform='translateY(0)';},50);
+  },700);
+}
+
+function tick() {
+  var key=getParisDateKey();
+  var card=schedule[key];
+  if(!card) return;
+  var btn=document.getElementById('checkBtn');
+  if(!btn.classList.contains('done')){
+    localStorage.setItem('ticked_'+key,'1');
+    btn.classList.add('done');
+    document.getElementById('circle').textContent='✓';
+    document.getElementById('btnText').textContent='Done ✓';
+  }
+  setTimeout(function(){showCelebration(card,card.type==='compose');},350);
+}
+
+function tickOptional() {
+  var key=getParisDateKey();
+  var ob=document.getElementById('optBtn');
+  if(!ob.classList.contains('done')){
+    localStorage.setItem('optTicked_'+key,'1');
+    ob.classList.add('done');
+    document.getElementById('optCircle').textContent='✓';
+    document.getElementById('optBtnText').textContent='Composed today too ✓';
+  }
+  var c={icon:'🎵',iconClass:'dancing',celebTitle:'You chose to compose today.',celebMsg:'Even two hours is a real session. You opened your ideas on your own terms — that is entirely yours.'};
+  setTimeout(function(){showCelebration(c,true);},350);
+}
+
+function showCelebration(card,isCompose) {
+  var icon=document.getElementById('celebIcon');
+  icon.textContent=card.icon;
+  icon.className='celeb-icon '+card.iconClass;
+  document.getElementById('celebTitle').textContent=card.celebTitle;
+  document.getElementById('celebMsg').textContent=card.celebMsg;
+  document.getElementById('celebOverlay').classList.add('show');
+  launchConfetti(isCompose);
+  var key=getParisDateKey();
+  if(key==='2026-05-30'&&allComposeTicked()){
+    document.getElementById('weekBanner').classList.add('show');
+    document.getElementById('wbMsg').textContent='Monday. Tuesday. Thursday. Friday. Every composing day this week — done. That is not luck and it is not a good mood. That is a composer who shows up when it is time to show up. Remember how this week felt.';
+  }
+}
+
+function closeceleb() {
+  document.getElementById('celebOverlay').classList.remove('show');
+}
+
+function launchConfetti(isCompose) {
+  var count=isCompose?220:130;
+  var colors=isCompose
+    ?['#FFD700','#FFF176','#F7857A','#B39DDB','#7EC8E3','#ffffff','#FFB300','#E040A0','#A8E6CF','#FF6F00','#F5C842']
+    :['#FFB74D','#FFA726','#A5D6A7','#FFF176','#ffffff','#B39DDB','#81C784','#FFD54F','#FF8A65'];
+  var sMin=isCompose?0.5:0.9,sMax=isCompose?1.2:2.0,intv=isCompose?5:10;
+  var shapes=['50%','2px','0px'];
+  for(var i=0;i<count;i++){
+    (function(idx){
+      setTimeout(function(){
+        var el=document.createElement('div');el.className='piece';
+        var size=isCompose?4+Math.random()*11:7+Math.random()*9;
+        var color=colors[Math.floor(Math.random()*colors.length)];
+        var gc=colors[Math.floor(Math.random()*colors.length)];
+        var shape=shapes[Math.floor(Math.random()*shapes.length)];
+        var glow=Math.random()>0.4?'box-shadow:0 0 '+(3+Math.random()*9).toFixed(1)+'px '+gc+';':'';
+        var dur=(sMin+Math.random()*(sMax-sMin)).toFixed(2);
+        el.style.cssText='left:'+Math.random()*100+'vw;top:-14px;width:'+size+'px;height:'+size+'px;background:'+color+';border-radius:'+shape+';animation-duration:'+dur+'s;'+glow;
+        document.body.appendChild(el);
+        setTimeout(function(){el.remove();},4500);
+      },idx*intv);
+    })(i);
+  }
+}
+
+function checkPw() {
+  var val=document.getElementById('pwInput').value.trim().toLowerCase();
+  if(val==='icandoit'){
+    sessionStorage.setItem('composer_auth','1');
+    document.getElementById('pwScreen').classList.add('hide');
+    render();
+    updateCountdown();
+  } else {
+    var err=document.getElementById('pwError');
+    err.classList.add('show');
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwInput').focus();
+    setTimeout(function(){err.classList.remove('show');},3000);
+  }
+}
+
+function initAuth() {
+  if(sessionStorage.getItem('composer_auth')==='1'){
+    document.getElementById('pwScreen').classList.add('hide');
+    render();
+    updateCountdown();
+  }
+}
+
+initAuth();
+setInterval(function(){
+  if(sessionStorage.getItem('composer_auth')==='1') updateCountdown();
+},1000);
+</script>
+</body>
+</html>
